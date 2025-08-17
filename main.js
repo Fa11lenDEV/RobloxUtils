@@ -467,33 +467,43 @@ startDynamicGamePage();
 //CONFIG
 
 (function() {
-    function addExtensionMenuItem() {
+    const MENU_FLAG = 'data-roblox-utils-added';
+    const LINK_TEXT = 'Roblox Utils';
 
-        const menu = document.querySelector('#settings-popover-menu');
+    function addItemToMenu(menu) {
+        if (!menu || menu.querySelector(`[${MENU_FLAG}]`) || Array.from(menu.querySelectorAll('a')).some(a => a.innerText === LINK_TEXT)) return;
 
-        if (!menu) return;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.innerText = LINK_TEXT;
+        a.href = 'javascript:void(0)';
+        a.style.cursor = 'pointer';
 
-        const menuItem = document.createElement("li");
-        const link = document.createElement("a");
-        link.className = "rbx-menu-item";
-        link.innerText = "Roblox Utils"; 
-        link.style.cursor = "pointer";
-        link.addEventListener("click", () => {
-            window.open(chrome.runtime.getURL("index.html"), "_blank");
+        a.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chrome.runtime.sendMessage({ action: 'open_index' });
         });
 
-        menuItem.appendChild(link);
+        li.appendChild(a);
+        li.setAttribute(MENU_FLAG, 'true');
 
-        menu.appendChild(menuItem);
+        if (/ul|ol/i.test(menu.tagName) || menu.querySelector('li')) {
+            menu.appendChild(li);
+        } else {
+            menu.appendChild(a);
+        }
     }
 
-    const observer = new MutationObserver(() => {
-        const menu = document.querySelector('#settings-popover-menu');
-        if (menu) {
-            addExtensionMenuItem();
-            observer.disconnect();
-        }
-    });
+    function scanMenus() {
+        const menus = document.querySelectorAll('#settings-popover-menu, ul.menu-vertical, [role="menu"], .rbx-popover, .popover, .dropdown, .menu-option-list');
+        menus.forEach(menu => addItemToMenu(menu));
+    }
 
-    observer.observe(document.body, { subtree: true, childList: true });
+    const observer = new MutationObserver(scanMenus);
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true });
+
+    setInterval(scanMenus, 1000);
+    scanMenus();
 })();
+
+
