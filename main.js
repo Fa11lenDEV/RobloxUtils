@@ -462,3 +462,38 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 scanHomepageCards();
 startDynamicGamePage();
+
+
+//CONFIG
+
+(function() {
+    function addExtensionMenuItem() {
+
+        const menu = document.querySelector('#settings-popover-menu');
+
+        if (!menu) return;
+
+        const menuItem = document.createElement("li");
+        const link = document.createElement("a");
+        link.className = "rbx-menu-item";
+        link.innerText = "Roblox Utils"; 
+        link.style.cursor = "pointer";
+        link.addEventListener("click", () => {
+            window.open(chrome.runtime.getURL("index.html"), "_blank");
+        });
+
+        menuItem.appendChild(link);
+
+        menu.appendChild(menuItem);
+    }
+
+    const observer = new MutationObserver(() => {
+        const menu = document.querySelector('#settings-popover-menu');
+        if (menu) {
+            addExtensionMenuItem();
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, { subtree: true, childList: true });
+})();
