@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Roblox Utils",
+    "description": "Roblox Utils!",
+    "version": "0.2.3",
+    "icons": {
+        
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "main.js"
+            ],
+            "css": [
+                "style.css"
+            ],
+            "matches": [
+                "*://*.roblox.com/*home*"
+            ]
+        }
+    ]
+}

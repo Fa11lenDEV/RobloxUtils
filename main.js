@@ -1,0 +1,365 @@
+//HI
+function waitForElementToExist(selector) {
+    return new Promise(resolve => {
+        
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
+        }
+
+       
+        const observer = new MutationObserver(() => {
+            
+            if (document.querySelector(selector)) {
+               
+                resolve(document.querySelector(selector));
+                observer.disconnect();
+            }
+        });
+
+       
+        observer.observe(document.body, {
+            subtree: true,
+            childList: true,
+        });
+    });
+}
+
+
+function waitForElement(selector, targetClass, targetSelector, callbackClass, callbackElement) {
+    const targetElement = document.querySelector(selector);
+
+    if (targetElement && targetElement.classList.contains(targetClass)) {
+        callbackClass();
+        return;
+    }
+
+    const observer = new MutationObserver(() => {
+        if (targetElement && targetElement.classList.contains(targetClass)) {
+            observer.disconnect();
+            callbackClass();
+        } else if (document.querySelector(targetSelector)) {
+            observer.disconnect();
+            callbackElement();
+        }
+    });
+
+    const config = { attributes: true, subtree: true };
+
+    observer.observe(document.body, config);
+}
+
+
+async function setProfilePicture(imageElement){
+    var avatarImage = await waitForElementToExist("#navigation .avatar img");
+    imageElement.src = avatarImage?.src || "";
+}
+
+var greetings = {
+    "id_id": "Halo",
+    "de_de": "Hallo",
+    "en_us": "Hello",
+    "es_es": "Hola",
+    "fr_fr": "Bonjour",
+    "it_it": "Ciao",
+    "pt_br": "Olá",
+    "th_th": "สวัสดี",
+    "zh_cn": "你好",
+    "zh_tw": "你好",
+    "ja_jp": "こんにちは",
+    "ko_kr": "안녕하세요",
+    "ms_my": "Helo",
+    "nb_no": "Hei",
+    "sr_rs": "Здраво",
+    "da_dk": "Hej",
+    "et_ee": "Tere",
+    "fil_ph": "Kamusta",
+    "hr_hr": "Bok",
+    "lv_lv": "Sveiki",
+    "lt_lt": "Sveiki",
+    "hu_hu": "Helló",
+    "nl_nl": "Hallo",
+    "pl_pl": "Cześć",
+    "ro_ro": "Salut",
+    "sq_al": "Përshëndetje",
+    "sl_sl": "Zdravo",
+    "sk_sk": "Ahoj",
+    "fi_fi": "Hei",
+    "sv_se": "Hej",
+    "vi_vn": "Xin chào",
+    "tr_tr": "Merhaba",
+    "uk_ua": "Привіт",
+    "cs_cz": "Ahoj",
+    "el_gr": "Γειά σας",
+    "bs_ba": "Zdravo",
+    "bg_bg": "Здравейте",
+    "ru_ru": "Привет",
+    "kk_kz": "Сәлеметсіздерге",
+    "ar_001": "مرحبًا",
+    "hi_in": "नमस्ते",
+    "bn_bd": "হ্যালো",
+    "si_lk": "හෙලෝ",
+    "my_mm": "မင်္ဂလာ",
+    "ka_ge": "გამარჯობა",
+    "km_kh": "ជំរាប"
+};
+
+
+(async () => {
+    try {
+        
+        var userDataMeta = document.querySelector('meta[name="user-data"]');
+
+        var userId = userDataMeta.getAttribute('data-userid') || '1';
+        var name = userDataMeta.getAttribute('data-name') || 'Name';
+        var displayName = userDataMeta.getAttribute('data-displayname') || 'DisplayName';
+        var isUnder13 = userDataMeta.getAttribute('data-isunder13') === "true";
+        var created = userDataMeta.getAttribute('data-created') || '1/1/2009 1:00:00 AM';
+        var isPremiumUser = userDataMeta.getAttribute('data-ispremiumuser') === "true";
+        var hasVerifiedBadge = userDataMeta.getAttribute('data-hasverifiedbadge') === "true";
+
+        var userLocaleDataMeta = document.querySelector('meta[name="locale-data"]');
+
+        var languageCode = userLocaleDataMeta.getAttribute('data-language-code') || 'en_us';
+        var languageName = userLocaleDataMeta.getAttribute('data-language-name') || 'English';
+
+        var greeting = greetings[languageCode] || "Hello";
+
+        document.querySelector("#HomeContainer > div.section > div").innerHTML = `
+            <h1>
+                <a class="avatar avatar-card-fullbody" style="margin-right:15px;width:128px;height:128px;" href="/users/${userId}/profile">
+                    <span class="avatar-card-link friend-avatar icon-placeholder-avatar-headshot" style="width:128px;height:128px;">
+                        <thumbnail-2d class="avatar-card-image">
+                            <span id="avatar-image" class="thumbnail-2d-container">
+                                <img style="background-color: #d4d4d4"></img>
+                            </span>
+                        </thumbnail-2d>
+                    </span>
+                </a>
+                ${isPremiumUser ? '<span class="icon-premium-medium" style="margin-right: 10px;"></span>' : ""}
+                <a href="/users/${userId}/profile" class="user-name-container">${greeting}, ${displayName}!</a>
+            </h1>
+        `;
+
+        const avatarImage = document.getElementById("avatar-image");
+        const avatarImageImg = avatarImage.querySelector('img')
+
+        waitForElement('#navigation .avatar .avatar-card-image', 'icon-blocked', "#navigation .avatar img", () => {
+            avatarImage.classList.add("icon-blocked");
+            avatarImageImg.style.display = 'none';
+        }, () => {
+            setProfilePicture(avatarImageImg);
+        });
+        
+    } catch (error) {
+
+        console.error(error);
+    }
+})();
+
+//GAME DOLAR VALUE
+
+const MIN_ARPU = 0.05;
+const MAX_ARPU = 0.15;
+
+function estimateIncome(players) {
+  if (!players || isNaN(players)) return null;
+  const low = Math.round(players * MIN_ARPU);
+  const high = Math.round(players * MAX_ARPU);
+  return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
+}
+
+function parseNumeric(numericPart, isFromTitle) {
+ 
+  if (isFromTitle) {
+    const cleaned = numericPart.replace(/[^0-9]/g, '');
+    return parseInt(cleaned, 10);
+  } else {
+    
+    const parsedStr = numericPart.replace(/,/g, '');
+    return parseFloat(parsedStr);
+  }
+}
+
+function parsePlayersHighlights(text) {
+  if (!text) return null;
+  let s = String(text).replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
+  s = s.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
+  if (!s) return null;
+
+  const suffix = s.slice(-1);
+  let multiplier = 1;
+  let numericPart = s;
+
+  if (suffix === "K") multiplier = 1e3;
+  else if (suffix === "M") multiplier = 1e6;
+  else if (suffix === "B") multiplier = 1e9;
+
+  if (["K","M","B"].includes(suffix)) numericPart = s.slice(0, -1);
+  
+  const num = parseNumeric(numericPart, false);
+  return isNaN(num) ? null : Math.round(num * multiplier);
+}
+
+function parsePlayersGamePage(el) {
+  if (!el) return null;
+
+  const title = el.getAttribute("title");
+  const textContent = el.textContent;
+
+  let text = title || textContent;
+  if (!text) return null;
+
+  text = text.replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
+  text = text.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
+  if (!text) return null;
+
+  const suffix = text.slice(-1);
+  let multiplier = 1;
+  let numericPart = text;
+
+  if (suffix === "K") multiplier = 1e3;
+  else if (suffix === "M") multiplier = 1e6;
+  else if (suffix === "B") multiplier = 1e9;
+
+  if (["K","M","B"].includes(suffix)) numericPart = text.slice(0, -1);
+  
+  const num = parseNumeric(numericPart, !!title);
+  return isNaN(num) ? null : Math.round(num * multiplier);
+}
+
+function insertEstimateDetail(titleContainer, players) {
+  if (!titleContainer || !players) return;
+
+  let wrapper = titleContainer.querySelector(".estimate-detail");
+  if (!wrapper) {
+    wrapper = document.createElement("div");
+    wrapper.className = "info-label estimate-detail";
+    wrapper.style.display = "flex";
+    wrapper.style.alignItems = "center";
+    
+
+   
+  
+   
+
+    const text = document.createElement("span");
+    text.className = "estimate-detail";
+
+
+    wrapper.appendChild(text);
+    titleContainer.appendChild(wrapper);
+
+    const cardName = titleContainer.parentElement.querySelector(".game-card-name");
+    if (cardName) cardName.style.paddingBottom = "50px";
+  }
+
+  wrapper.querySelector("span").textContent = estimateIncome(players);
+}
+
+function insertEstimateCard(element, players) {
+  if (!element || !players || element.querySelector(".income-estimate")) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "info-label income-estimate";
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "center";
+  wrapper.style.gap = "6px";
+
+
+
+  const text = document.createElement("span");
+  text.textContent = estimateIncome(players);
+
+
+  wrapper.appendChild(text);
+  element.appendChild(wrapper);
+}
+
+function scanHomepageCards() {
+  document.querySelectorAll(".list-item.game-card").forEach(card => {
+    const playersEl = card.querySelector(".playing-counts-label");
+    const injCard = card.querySelector(".game-card-info");
+    if (playersEl && injCard) {
+      const players = parsePlayersHighlights(playersEl.textContent);
+      if (players) insertEstimateDetail(injCard, players);
+    }
+  });
+}
+
+function startDynamicGamePage() {
+  const statEl = document.querySelector(".game-stat:first-child .text-lead");
+  if (!statEl) return;
+
+  let retryCount = 0;
+  let lastPlayers = null;
+  let stableCount = 0;
+  const maxRetries = 10;
+  let debounceTimer = null;
+
+  const update = () => {
+    const players = parsePlayersGamePage(statEl);
+    const title = statEl.getAttribute("title") || '';
+    const textClean = statEl.textContent.replace(/[^0-9]/g, '');
+    const titleClean = title.replace(/[^0-9]/g, '');
+
+    if (!players || players < 100 || (title && textClean !== titleClean)) {
+      if (retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(update, 1000);
+      }
+      return;
+    }
+
+    if (players === lastPlayers) {
+      stableCount++;
+      if (stableCount >= 2) { 
+        const titleContainer = document.querySelector(".game-title-container");
+        const playButtonParent = document.querySelector(".btn-play-game, .play-button-container")?.parentElement;
+
+        if (titleContainer) insertEstimateDetail(titleContainer, players);
+        if (playButtonParent) insertEstimateDetail(playButtonParent, players);
+        return;
+      }
+    } else {
+      stableCount = 0;
+    }
+    lastPlayers = players;
+
+    setTimeout(update, 1000);
+  };
+
+  const debouncedUpdate = () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      retryCount = 0;
+      stableCount = 0;
+      update();
+    }, 500); 
+  };
+
+  update();
+
+  const mo = new MutationObserver(debouncedUpdate);
+  mo.observe(statEl, { childList: true, subtree: true, characterData: true, attributes: true });
+}
+
+let lastURL = location.href;
+setInterval(() => {
+  if (location.href !== lastURL) {
+    lastURL = location.href;
+    scanHomepageCards();
+    startDynamicGamePage();
+  }
+}, 1000);
+
+const observer = new MutationObserver(() => {
+  if (window.__robloxIncomeScanTimeout) clearTimeout(window.__robloxIncomeScanTimeout);
+  window.__robloxIncomeScanTimeout = setTimeout(() => {
+    scanHomepageCards();
+    startDynamicGamePage();
+  }, 200);
+});
+observer.observe(document.body, { childList: true, subtree: true });
+
+scanHomepageCards();
+startDynamicGamePage();

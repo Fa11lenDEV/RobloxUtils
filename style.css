@@ -1,0 +1,16 @@
+/* Seleciona todos os cards de jogo dentro do HomeContainer */
+#HomeContainer .list-item.game-card {
+
+    height: 250px !important; /* aumenta a altura da caixa */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Garante que a logo ocupe todo o espaço disponível no card */
+#HomeContainer .list-item.game-card img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+}
