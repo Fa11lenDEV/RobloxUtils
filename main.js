@@ -555,7 +555,6 @@ startDynamicGamePage();
         }
 
         usdSpan.textContent = `(${usdValue} USD)`;
-        console.log(`[RobuxUSD] Robux: ${robuxTotal}, USD: ${usdValue}`);
     }
 
     function observeRobuxChanges() {
