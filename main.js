@@ -467,43 +467,41 @@ startDynamicGamePage();
 //CONFIG
 
 (function() {
-    const MENU_FLAG = 'data-roblox-utils-added';
+    const BUTTON_ID = "robloxutils-extensao-btn"; 
     const LINK_TEXT = 'Roblox Utils';
 
-    function addItemToMenu(menu) {
-        if (!menu || menu.querySelector(`[${MENU_FLAG}]`) || Array.from(menu.querySelectorAll('a')).some(a => a.innerText === LINK_TEXT)) return;
+    function addExtensionMenuItem() {
+        const menu = document.querySelector('#settings-popover-menu');
+        if (!menu) return;
 
-        const li = document.createElement('li');
+        if (document.getElementById(BUTTON_ID)) return;
+
+        const menuItem = document.createElement("li");
         const a = document.createElement('a');
+        a.id = BUTTON_ID; 
         a.innerText = LINK_TEXT;
         a.href = 'javascript:void(0)';
         a.style.cursor = 'pointer';
-
+        
         a.addEventListener('click', (e) => {
             e.stopPropagation();
             chrome.runtime.sendMessage({ action: 'open_index' });
         });
 
-        li.appendChild(a);
-        li.setAttribute(MENU_FLAG, 'true');
+        menuItem.appendChild(a);
 
-        if (/ul|ol/i.test(menu.tagName) || menu.querySelector('li')) {
-            menu.appendChild(li);
+        if (menu.firstChild) {
+            menu.insertBefore(menuItem, menu.firstChild);
         } else {
-            menu.appendChild(a);
+            menu.appendChild(menuItem);
         }
     }
 
-    function scanMenus() {
-        const menus = document.querySelectorAll('#settings-popover-menu, ul.menu-vertical, [role="menu"], .rbx-popover, .popover, .dropdown, .menu-option-list');
-        menus.forEach(menu => addItemToMenu(menu));
-    }
+    const observer = new MutationObserver(() => {
+        addExtensionMenuItem();
+    });
 
-    const observer = new MutationObserver(scanMenus);
-    observer.observe(document.body, { subtree: true, childList: true, attributes: true });
-
-    setInterval(scanMenus, 1000);
-    scanMenus();
+    observer.observe(document.body, { subtree: true, childList: true });
 })();
 
 
