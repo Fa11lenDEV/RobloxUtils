@@ -506,80 +506,72 @@ startDynamicGamePage();
 
 //CONECTIONS TO FRIENDS
 
-if (!window.__robloxUtilsObserverInitialized) {
-  window.__robloxUtilsObserverInitialized = true;
 
-  function replaceWords(text) {
-    if (!text) return text;
-    return text
-      .replace(/\bConnections\b/g, "Friends")
-      .replace(/\bConnection\b/g, "Friend")
-      .replace(/\bConnect\b/g, "Friend");
-  }
+//ROBUX FOR USD
 
-  function walk(node) {
-    if (!node) return;
+(function() {
+    const DEVEX_RATE = 0.0035; 
+    let lastRobux = null;
 
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      if (
-        node.matches('span.font-header-2.dynamic-ellipsis-item[title="Friend"], span.font-header-2.dynamic-ellipsis-item[title="friend"]')
-      ) {
-        node.textContent = "Friends";
-        node.setAttribute("title", "Friends");
-      }
+    function parseRobuxText(text) {
+        text = text.toLowerCase().replace(/,/g, '').trim();
+        let multiplier = 1;
 
-      ["placeholder", "title", "aria-label"].forEach(attr => {
-        if (node.hasAttribute(attr)) {
-          const original = node.getAttribute(attr);
-          const updated = replaceWords(original);
-          if (original !== updated) node.setAttribute(attr, updated);
+        if (text.endsWith('k')) {
+            multiplier = 1000;
+            text = text.slice(0, -1);
+        } else if (text.endsWith('m')) {
+            multiplier = 1000000;
+            text = text.slice(0, -1);
+        } else if (text.endsWith('b')) {
+            multiplier = 1000000000;
+            text = text.slice(0, -1);
         }
-      });
+
+        const num = parseFloat(text);
+        return isNaN(num) ? 0 : Math.round(num * multiplier);
     }
 
-    if (
-      node.nodeType === Node.ELEMENT_NODE ||
-      node.nodeType === Node.DOCUMENT_NODE ||
-      node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-    ) {
-      let child = node.firstChild;
-      while (child) {
-        const next = child.nextSibling;
-        walk(child);
-        child = next;
-      }
-    } else if (node.nodeType === Node.TEXT_NODE) {
-      node.nodeValue = replaceWords(node.nodeValue);
+    function updateRobuxUSD() {
+        const robuxSpan = document.getElementById("nav-robux-amount");
+        if (!robuxSpan) return;
+
+        const robuxTotal = parseRobuxText(robuxSpan.textContent);
+
+        if (robuxTotal === lastRobux) return;
+        lastRobux = robuxTotal;
+
+        const usdValue = (robuxTotal * DEVEX_RATE).toFixed(2);
+
+        let usdSpan = document.getElementById("nav-robux-usd");
+        if (!usdSpan) {
+            usdSpan = document.createElement("span");
+            usdSpan.id = "nav-robux-usd";
+            usdSpan.style.marginLeft = "4px";
+            usdSpan.style.fontWeight = "normal";
+            usdSpan.style.fontSize = "12px";
+            usdSpan.style.color = "#ccc";
+            robuxSpan.parentNode.appendChild(usdSpan);
+        }
+
+        usdSpan.textContent = `(${usdValue} USD)`;
+        console.log(`[RobuxUSD] Robux: ${robuxTotal}, USD: ${usdValue}`);
     }
-  }
 
-  function updateTitle() {
-    document.title = replaceWords(document.title);
-  }
+    function observeRobuxChanges() {
+        const robuxSpan = document.getElementById("nav-robux-amount");
+        if (robuxSpan) {
+            const observer = new MutationObserver(updateRobuxUSD);
+            observer.observe(robuxSpan, { childList: true, subtree: true, characterData: true });
 
-  function runAll() {
-    walk(document.body);
-    updateTitle();
-  }
+            setInterval(updateRobuxUSD, 1000);
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", runAll);
-  } else {
-    runAll();
-  }
-
-  const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        walk(node);
-      }
+            updateRobuxUSD();
+        } else {
+            setTimeout(observeRobuxChanges, 500);
+        }
     }
-    updateTitle();
-  });
 
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  setInterval(runAll, 5000);
-}
-
+    observeRobuxChanges();
+})();
 
