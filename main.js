@@ -495,29 +495,3 @@ scanPageForCards();
 })();
 
 
-// REMOVE FRIEND CONNECTIONS FROM GAME CARDS
-(function() {
-    function removeFriendInfo() {
-        const friendInfoElements = document.querySelectorAll('.game-card-friend-info');
-        friendInfoElements.forEach(el => {
-            if (el) {
-                el.remove();
-            }
-        });
-    }
-
-    const observer = new MutationObserver((mutationsList, observer) => {
-        for(const mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                removeFriendInfo();
-            }
-        }
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-
-    removeFriendInfo();
-})();
