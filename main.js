@@ -504,4 +504,82 @@ startDynamicGamePage();
     observer.observe(document.body, { subtree: true, childList: true });
 })();
 
+//CONECTIONS TO FRIENDS
+
+if (!window.__robloxUtilsObserverInitialized) {
+  window.__robloxUtilsObserverInitialized = true;
+
+  function replaceWords(text) {
+    if (!text) return text;
+    return text
+      .replace(/\bConnections\b/g, "Friends")
+      .replace(/\bConnection\b/g, "Friend")
+      .replace(/\bConnect\b/g, "Friend");
+  }
+
+  function walk(node) {
+    if (!node) return;
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      if (
+        node.matches('span.font-header-2.dynamic-ellipsis-item[title="Friend"], span.font-header-2.dynamic-ellipsis-item[title="friend"]')
+      ) {
+        node.textContent = "Friends";
+        node.setAttribute("title", "Friends");
+      }
+
+      ["placeholder", "title", "aria-label"].forEach(attr => {
+        if (node.hasAttribute(attr)) {
+          const original = node.getAttribute(attr);
+          const updated = replaceWords(original);
+          if (original !== updated) node.setAttribute(attr, updated);
+        }
+      });
+    }
+
+    if (
+      node.nodeType === Node.ELEMENT_NODE ||
+      node.nodeType === Node.DOCUMENT_NODE ||
+      node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+    ) {
+      let child = node.firstChild;
+      while (child) {
+        const next = child.nextSibling;
+        walk(child);
+        child = next;
+      }
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      node.nodeValue = replaceWords(node.nodeValue);
+    }
+  }
+
+  function updateTitle() {
+    document.title = replaceWords(document.title);
+  }
+
+  function runAll() {
+    walk(document.body);
+    updateTitle();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runAll);
+  } else {
+    runAll();
+  }
+
+  const observer = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        walk(node);
+      }
+    }
+    updateTitle();
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  setInterval(runAll, 5000);
+}
+
 
