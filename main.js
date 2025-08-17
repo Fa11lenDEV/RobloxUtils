@@ -180,7 +180,6 @@ var greetings = {
 
 
 //GAME DOLAR VALUE
-
 const MIN_ARPU = 0.05;
 const MAX_ARPU = 0.15;
 
@@ -237,50 +236,163 @@ function parsePlayersGamePage(el) {
     return isNaN(num) ? null : Math.round(num * multiplier);
 }
 
-function insertEstimateDetail(titleContainer, players) {
-    if (!titleContainer || !players) return;
-    let wrapper = titleContainer.querySelector(".estimate-detail");
-    if (!wrapper) {
-        wrapper = document.createElement("div");
-        wrapper.className = "info-label estimate-detail";
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "center";
-        const text = document.createElement("span");
-        text.className = "estimate-detail";
-        wrapper.appendChild(text);
-        titleContainer.appendChild(wrapper);
-        const cardName = titleContainer.parentElement.querySelector(".game-card-name");
-        if (cardName) cardName.style.paddingBottom = "50px";
+function isSmallCard(card) {
+    if (!card || typeof card.getBoundingClientRect !== 'function') return false;
+    try {
+        const w = card.getBoundingClientRect().width;
+        return w > 0 && w < 200; 
+    } catch (e) {
+        return false;
     }
-    wrapper.querySelector("span").textContent = estimateIncome(players);
 }
 
-function insertEstimateCard(element, players) {
-    if (!element || !players || element.querySelector(".income-estimate")) return;
-    const wrapper = document.createElement("div");
-    wrapper.className = "info-label income-estimate";
-    wrapper.style.display = "flex";
-    wrapper.style.alignItems = "center";
-    wrapper.style.gap = "6px";
-    const text = document.createElement("span");
-    text.textContent = estimateIncome(players);
-    wrapper.appendChild(text);
-    element.appendChild(wrapper);
+function ensureCardId(card) {
+    if (!card) return null;
+    if (!card.dataset.robloxIncomeId) {
+        card.dataset.robloxIncomeId = 'rbi-' + Math.random().toString(36).slice(2,9);
+    }
+    return card.dataset.robloxIncomeId;
 }
 
-function scanHomepageCards() {
-    document.querySelectorAll(".list-item.game-card").forEach(card => {
-        const playersEl = card.querySelector(".playing-counts-label");
-        const injCard = card.querySelector(".game-card-info");
-        if (playersEl && injCard) {
-            const players = parsePlayersHighlights(playersEl.textContent);
-            if (players) insertEstimateDetail(injCard, players);
+
+function removeExistingIncomeLabels(card) {
+    if (!card) return;
+    const id = card.dataset && card.dataset.robloxIncomeId;
+
+    const sel = [
+        "[data-roblox-income-id]",
+        ".income-estimate",
+        ".estimate-detail"
+    ].join(',');
+    const nodes = card.querySelectorAll(sel);
+    nodes.forEach(n => {
+
+        if (n.dataset && n.dataset.robloxIncomeId) n.remove();
+        else if (n.classList && (n.classList.contains('income-estimate') || n.classList.contains('estimate-detail'))) {
+
+            n.remove();
         }
     });
 }
 
+function applyEstimateToCard(card) {
+    if (!card) return;
+    ensureCardId(card);
+
+    const playersEl = card.querySelector(".playing-counts-label, .playing-counts, .online-count, .game-card-playing-count, .game-card-meta .playing");
+    let players = playersEl ? parsePlayersHighlights(playersEl.textContent) : null;
+
+    if (!players) {
+
+        const infoEls = card.querySelectorAll(".info-label, .game-card-info .info-label, .game-card-meta, .game-card-info, .card-meta, .card-footer, .card-subtitle, .card-body");
+        for (const el of infoEls) {
+            const maybe = parsePlayersHighlights(el.textContent);
+            if (maybe && maybe >= 1) { players = maybe; break; }
+        }
+    }
+
+    if (!players) {
+        const text = card.textContent || "";
+        const candidates = text.match(/(\d[\d.,]*\s*[KMB]?)/ig) || [];
+        for (const cand of candidates) {
+            if (cand.includes("%")) continue;
+            const parsed = parsePlayersHighlights(cand);
+            if (parsed && parsed >= 1 && parsed < 1e10) { players = parsed; break; }
+        }
+    }
+
+    if (!players || players < 5) {
+
+        return;
+    }
+
+    const existing = card.querySelector("[data-roblox-income-id='" + card.dataset.robloxIncomeId + "']");
+    const preferInfoArea = card.querySelector(".game-card-info, .card-meta, .game-card-details, .game-card-info .game-card-name, .card-footer, .card-body") || card;
+    const titleContainer = card.querySelector(".game-title-container, .game-card-info, .game-card-name, .text") || preferInfoArea;
+    const small = isSmallCard(card);
+    const textVal = estimateIncome(players);
+    const textNoBreak = textVal.replace(' - ', '\u00A0-\u00A0');
+
+    if (existing) {
+
+        if (existing.tagName === 'SPAN' || existing.querySelector && existing.querySelector('span')) {
+            const span = existing.tagName === 'SPAN' ? existing : existing.querySelector('span') || existing;
+            if (small) {
+                span.textContent = textNoBreak;
+                span.style.whiteSpace = "nowrap";
+                span.style.display = "inline-block";
+                span.style.transform = "translateY(-18px)"; 
+            } else {
+                span.textContent = textVal;
+                span.style.whiteSpace = "";
+                span.style.display = "";
+                span.style.transform = "";
+            }
+        } else {
+            // generic update
+            existing.textContent = small ? textNoBreak : textVal;
+        }
+        return;
+    }
+
+    const prev = card.querySelectorAll(".income-estimate, .estimate-detail");
+    if (prev && prev.length > 0) {
+        prev.forEach(n => n.remove());
+    }
+
+
+    if (small) {
+
+        const span = document.createElement("span");
+        span.className = "income-estimate";
+        span.setAttribute("data-roblox-income-id", card.dataset.robloxIncomeId);
+        span.textContent = textNoBreak;
+        span.style.whiteSpace = "nowrap";
+        span.style.display = "inline-block";
+        span.style.transform = "translateY(-25px)";
+
+        const prefer = preferInfoArea.querySelector(".info-label, .game-card-meta, .meta, .game-meta, .card-subtitle, .card-footer");
+        if (prefer) prefer.appendChild(span); else preferInfoArea.appendChild(span);
+    } else {
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "info-label estimate-detail";
+        wrapper.setAttribute("data-roblox-income-id", card.dataset.robloxIncomeId);
+        const textNode = document.createElement("span");
+        textNode.className = "estimate-detail";
+        textNode.textContent = textVal;
+        wrapper.appendChild(textNode);
+        titleContainer.appendChild(wrapper);
+    }
+}
+
+function scanHomepageCards() {
+    const selectors = [
+        ".list-item.game-card",
+        ".game-card",
+        ".card-game",
+        ".game-card-container",
+        ".item-card",
+        ".card"
+    ];
+    const seen = new Set();
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(card => {
+            if (!card) return;
+            if (seen.has(card)) return;
+            seen.add(card);
+            try {
+                applyEstimateToCard(card);
+            } catch (e) {
+
+                console.error("rbi: applyEstimateToCard error", e);
+            }
+        });
+    });
+}
+
 function startDynamicGamePage() {
-    const statEl = document.querySelector(".game-stat:first-child .text-lead");
+    const statEl = document.querySelector(".game-stat:first-child .text-lead, .game-stats .stat:first-child .stat-value, .game-stat .text-lead");
     if (!statEl) return;
     let retryCount = 0;
     let lastPlayers = null;
@@ -304,8 +416,12 @@ function startDynamicGamePage() {
             if (stableCount >= 2) {
                 const titleContainer = document.querySelector(".game-title-container");
                 const playButtonParent = document.querySelector(".btn-play-game, .play-button-container")?.parentElement;
-                if (titleContainer) insertEstimateDetail(titleContainer, players);
-                if (playButtonParent) insertEstimateDetail(playButtonParent, players);
+                if (titleContainer) {
+
+                    const fakeCard = document.querySelector(".game-page"); 
+                    applyEstimateToCard(fakeCard || titleContainer);
+                }
+                if (playButtonParent) applyEstimateToCard(playButtonParent);
                 return;
             }
         } else {
