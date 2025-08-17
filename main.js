@@ -183,64 +183,61 @@ var greetings = {
 const MIN_ARPU = 0.05;
 const MAX_ARPU = 0.15;
 
-function estimateIncome(players) {
+function estimateIncome(players, approvalRating) {
     if (!players || isNaN(players)) return null;
-    const low = Math.round(players * MIN_ARPU);
-    const high = Math.round(players * MAX_ARPU);
+
+    let adjustedMinArpu = MIN_ARPU;
+    let adjustedMaxArpu = MAX_ARPU;
+
+    if (approvalRating && !isNaN(approvalRating)) {
+        const arpuRange = MAX_ARPU - MIN_ARPU;
+        const adjustment = (approvalRating / 100) * arpuRange;
+        adjustedMinArpu = MIN_ARPU + (adjustment / 2);
+        adjustedMaxArpu = MAX_ARPU - (arpuRange - adjustment) / 2;
+    }
+
+    const low = Math.round(players * adjustedMinArpu);
+    const high = Math.round(players * adjustedMaxArpu);
+
+    if (low === 0 && high === 0 && players > 0) return "$0 - $1";
     return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
 }
 
-function parseNumeric(numericPart, isFromTitle) {
-    if (isFromTitle) {
-        const cleaned = numericPart.replace(/[^0-9]/g, '');
-        return parseInt(cleaned, 10);
-    } else {
-        const parsedStr = numericPart.replace(/,/g, '');
-        return parseFloat(parsedStr);
-    }
-}
-
-function parsePlayersHighlights(text) {
+function parsePlayerCount(text) {
     if (!text) return null;
     let s = String(text).replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
-    s = s.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
+    s = s.replace(/[^0-9.,KMB]/g, "");
     if (!s) return null;
     const suffix = s.slice(-1);
     let multiplier = 1;
     let numericPart = s;
-    if (suffix === "K") multiplier = 1e3;
-    else if (suffix === "M") multiplier = 1e6;
-    else if (suffix === "B") multiplier = 1e9;
-    if (["K","M","B"].includes(suffix)) numericPart = s.slice(0, -1);
-    const num = parseNumeric(numericPart, false);
+    if (["K", "M", "B"].includes(suffix)) {
+        numericPart = s.slice(0, -1);
+        if (suffix === "K") multiplier = 1e3;
+        else if (suffix === "M") multiplier = 1e6;
+        else if (suffix === "B") multiplier = 1e9;
+    }
+    const num = parseFloat(numericPart.replace(/,/g, ''));
     return isNaN(num) ? null : Math.round(num * multiplier);
 }
 
-function parsePlayersGamePage(el) {
-    if (!el) return null;
-    const title = el.getAttribute("title");
-    const textContent = el.textContent;
-    let text = title || textContent;
-    if (!text) return null;
-    text = text.replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
-    text = text.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
-    if (!text) return null;
-    const suffix = text.slice(-1);
-    let multiplier = 1;
-    let numericPart = text;
-    if (suffix === "K") multiplier = 1e3;
-    else if (suffix === "M") multiplier = 1e6;
-    else if (suffix === "B") multiplier = 1e9;
-    if (["K","M","B"].includes(suffix)) numericPart = text.slice(0, -1);
-    const num = parseNumeric(numericPart, !!title);
-    return isNaN(num) ? null : Math.round(num * multiplier);
+function getApprovalRating(card) {
+    const approvalEl = card.querySelector(".vote-percentage-label, .game-card-meta .vote-percentage, .icon-like, .game-card-info-votes");
+    if (!approvalEl) return null;
+
+    const text = approvalEl.textContent;
+    const match = text.match(/(\d+)%/);
+    if (match) {
+        return parseInt(match[1], 10);
+    }
+    return null;
 }
 
 function isSmallCard(card) {
     if (!card || typeof card.getBoundingClientRect !== 'function') return false;
     try {
         const w = card.getBoundingClientRect().width;
-        return w > 0 && w < 200; 
+        return w > 0 && w < 200;
     } catch (e) {
         return false;
     }
@@ -249,219 +246,146 @@ function isSmallCard(card) {
 function ensureCardId(card) {
     if (!card) return null;
     if (!card.dataset.robloxIncomeId) {
-        card.dataset.robloxIncomeId = 'rbi-' + Math.random().toString(36).slice(2,9);
+        card.dataset.robloxIncomeId = 'rbi-' + Math.random().toString(36).slice(2, 9);
     }
     return card.dataset.robloxIncomeId;
 }
 
-
-function removeExistingIncomeLabels(card) {
-    if (!card) return;
-    const id = card.dataset && card.dataset.robloxIncomeId;
-
-    const sel = [
-        "[data-roblox-income-id]",
-        ".income-estimate",
-        ".estimate-detail"
-    ].join(',');
-    const nodes = card.querySelectorAll(sel);
-    nodes.forEach(n => {
-
-        if (n.dataset && n.dataset.robloxIncomeId) n.remove();
-        else if (n.classList && (n.classList.contains('income-estimate') || n.classList.contains('estimate-detail'))) {
-
-            n.remove();
-        }
-    });
-}
-
 function applyEstimateToCard(card) {
     if (!card) return;
-    ensureCardId(card);
 
-    const playersEl = card.querySelector(".playing-counts-label, .playing-counts, .online-count, .game-card-playing-count, .game-card-meta .playing");
-    let players = playersEl ? parsePlayersHighlights(playersEl.textContent) : null;
+    // --- NOVA LÓGICA: Se não houver jogadores ou se for um jogo indisponível, remova a estimativa. ---
+    const playersEl = card.querySelector(".playing-counts-label, .game-card-playing-count, .game-card-meta .playing");
+    let players = playersEl ? parsePlayerCount(playersEl.textContent) : null;
 
     if (!players) {
-
-        const infoEls = card.querySelectorAll(".info-label, .game-card-info .info-label, .game-card-meta, .game-card-info, .card-meta, .card-footer, .card-subtitle, .card-body");
+        const infoEls = card.querySelectorAll(".info-label, .game-card-info, .card-meta, .card-footer, .card-subtitle");
         for (const el of infoEls) {
-            const maybe = parsePlayersHighlights(el.textContent);
-            if (maybe && maybe >= 1) { players = maybe; break; }
+            const maybe = parsePlayerCount(el.textContent);
+            if (maybe && maybe > (players || 0)) {
+                players = maybe;
+            }
         }
     }
+    
+    // Verificamos se o jogo tem um número de jogadores (maior que 0) ou se ele tem o ícone de 'privado'
+    // Esta é a nova trava que deve funcionar para todos os casos.
+    const isUnavailable = !players || players <= 0 ||
+                          card.querySelector('.game-card-private-icon, .game-card-closed-icon');
 
-    if (!players) {
-        const text = card.textContent || "";
-        const candidates = text.match(/(\d[\d.,]*\s*[KMB]?)/ig) || [];
-        for (const cand of candidates) {
-            if (cand.includes("%")) continue;
-            const parsed = parsePlayersHighlights(cand);
-            if (parsed && parsed >= 1 && parsed < 1e10) { players = parsed; break; }
-        }
-    }
-
-    if (!players || players < 5) {
-
+    if (isUnavailable) {
+        card.querySelectorAll(".income-estimate, .estimate-detail").forEach(n => n.remove());
         return;
     }
 
-    const existing = card.querySelector("[data-roblox-income-id='" + card.dataset.robloxIncomeId + "']");
-    const preferInfoArea = card.querySelector(".game-card-info, .card-meta, .game-card-details, .game-card-info .game-card-name, .card-footer, .card-body") || card;
-    const titleContainer = card.querySelector(".game-title-container, .game-card-info, .game-card-name, .text") || preferInfoArea;
+    // --- RESTANTE DO CÓDIGO ---
+
+    ensureCardId(card);
+    const lastKnownPlayers = parseInt(card.dataset.robloxIncomePlayers || '0', 10);
+
+    // Se o número de jogadores for o mesmo ou menor que o anterior, não faça nada.
+    if (players <= lastKnownPlayers) {
+        return;
+    }
+
+    card.dataset.robloxIncomePlayers = players;
+
+    const approvalRating = getApprovalRating(card);
+    
+    const textVal = estimateIncome(players, approvalRating);
     const small = isSmallCard(card);
-    const textVal = estimateIncome(players);
     const textNoBreak = textVal.replace(' - ', '\u00A0-\u00A0') + ' USD';
+    
+    const uniqueId = card.dataset.robloxIncomeId;
+    const existing = card.querySelector(`[data-roblox-income-id='${uniqueId}']`);
 
     if (existing) {
-
-        if (existing.tagName === 'SPAN' || existing.querySelector && existing.querySelector('span')) {
-            const span = existing.tagName === 'SPAN' ? existing : existing.querySelector('span') || existing;
-            if (small) {
-                span.textContent = textNoBreak;
-                span.style.whiteSpace = "nowrap";
-                span.style.display = "inline-block";
-                span.style.transform = "translateY(10px)"; 
-            } else {
-                span.textContent = textVal;
-                span.style.whiteSpace = "";
-                span.style.display = "";
-                span.style.transform = "";
-            }
+        if (small) {
+            existing.textContent = textNoBreak;
         } else {
-            existing.textContent = small ? textNoBreak : textVal;
+            const innerSpan = existing.querySelector('span');
+            if(innerSpan) {
+                innerSpan.textContent = textVal;
+            } else {
+                existing.textContent = textVal;
+            }
         }
         return;
     }
-
-    const prev = card.querySelectorAll(".income-estimate, .estimate-detail");
-    if (prev && prev.length > 0) {
-        prev.forEach(n => n.remove());
-    }
-
+    
+    card.querySelectorAll(".income-estimate, .estimate-detail").forEach(n => n.remove());
 
     if (small) {
-
         const span = document.createElement("span");
         span.className = "income-estimate";
-        span.setAttribute("data-roblox-income-id", card.dataset.robloxIncomeId);
+        span.setAttribute("data-roblox-income-id", uniqueId);
         span.textContent = textNoBreak;
         span.style.whiteSpace = "nowrap";
         span.style.display = "inline-block";
         span.style.transform = "translateY(20px)";
 
-        const prefer = preferInfoArea.querySelector(".info-label, .game-card-meta, .meta, .game-meta, .card-subtitle, .card-footer");
-        if (prefer) prefer.appendChild(span); else preferInfoArea.appendChild(span);
+        const preferInfoArea = card.querySelector(".game-card-info, .item-card-info, .card-info, .card-body, .card-footer");
+        const prefer = preferInfoArea ? preferInfoArea.querySelector(".info-label, .game-card-meta, .meta, .game-meta, .card-subtitle, .card-footer") : card.querySelector(".info-label");
+        
+        if (prefer) {
+            prefer.appendChild(span);
+        } else if (preferInfoArea) {
+            preferInfoArea.appendChild(span);
+        } else {
+            card.appendChild(span);
+        }
+
     } else {
+        const titleContainer = card.querySelector(".game-title-container, .game-card-name, .item-card-name");
+        const preferInfoArea = card.querySelector(".game-card-info, .item-card-details, .card-info");
 
         const wrapper = document.createElement("div");
         wrapper.className = "info-label estimate-detail";
-        wrapper.setAttribute("data-roblox-income-id", card.dataset.robloxIncomeId);
+        wrapper.setAttribute("data-roblox-income-id", uniqueId);
+
         const textNode = document.createElement("span");
         textNode.className = "estimate-detail";
         textNode.textContent = textVal;
+        
         wrapper.appendChild(textNode);
-        titleContainer.appendChild(wrapper);
+
+        if (preferInfoArea) {
+            preferInfoArea.appendChild(wrapper);
+        } else if (titleContainer) {
+            titleContainer.appendChild(wrapper);
+        } else {
+            card.appendChild(wrapper);
+        }
     }
 }
 
-function scanHomepageCards() {
+function scanPageForCards() {
     const selectors = [
-        ".list-item.game-card",
-        ".game-card",
-        ".card-game",
-        ".game-card-container",
-        ".item-card",
-        ".card"
+        ".list-item.game-card", ".game-card", ".card-game", 
+        ".game-card-container", ".item-card", ".card"
     ];
-    const seen = new Set();
-    selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(card => {
-            if (!card) return;
-            if (seen.has(card)) return;
-            seen.add(card);
-            try {
-                applyEstimateToCard(card);
-            } catch (e) {
-
-                console.error("rbi: applyEstimateToCard error", e);
-            }
-        });
+    const cards = document.querySelectorAll(selectors.join(', '));
+    cards.forEach(card => {
+        try {
+            applyEstimateToCard(card);
+        } catch (e) {
+            console.error("RBI Error:", e);
+        }
     });
 }
 
-function startDynamicGamePage() {
-    const statEl = document.querySelector(".game-stat:first-child .text-lead, .game-stats .stat:first-child .stat-value, .game-stat .text-lead");
-    if (!statEl) return;
-    let retryCount = 0;
-    let lastPlayers = null;
-    let stableCount = 0;
-    const maxRetries = 10;
-    let debounceTimer = null;
-    const update = () => {
-        const players = parsePlayersGamePage(statEl);
-        const title = statEl.getAttribute("title") || '';
-        const textClean = statEl.textContent.replace(/[^0-9]/g, '');
-        const titleClean = title.replace(/[^0-9]/g, '');
-        if (!players || players < 100 || (title && textClean !== titleClean)) {
-            if (retryCount < maxRetries) {
-                retryCount++;
-                setTimeout(update, 1000);
-            }
-            return;
-        }
-        if (players === lastPlayers) {
-            stableCount++;
-            if (stableCount >= 2) {
-                const titleContainer = document.querySelector(".game-title-container");
-                const playButtonParent = document.querySelector(".btn-play-game, .play-button-container")?.parentElement;
-                if (titleContainer) {
-
-                    const fakeCard = document.querySelector(".game-page"); 
-                    applyEstimateToCard(fakeCard || titleContainer);
-                }
-                if (playButtonParent) applyEstimateToCard(playButtonParent);
-                return;
-            }
-        } else {
-            stableCount = 0;
-        }
-        lastPlayers = players;
-        setTimeout(update, 1000);
-    };
-    const debouncedUpdate = () => {
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            retryCount = 0;
-            stableCount = 0;
-            update();
-        }, 500);
-    };
-    update();
-    const mo = new MutationObserver(debouncedUpdate);
-    mo.observe(statEl, { childList: true, subtree: true, characterData: true, attributes: true });
-}
-
-let lastURL = location.href;
-setInterval(() => {
-    if (location.href !== lastURL) {
-        lastURL = location.href;
-        scanHomepageCards();
-        startDynamicGamePage();
-    }
-}, 1000);
-
 const observer = new MutationObserver(() => {
     if (window.__robloxIncomeScanTimeout) clearTimeout(window.__robloxIncomeScanTimeout);
-    window.__robloxIncomeScanTimeout = setTimeout(() => {
-        scanHomepageCards();
-        startDynamicGamePage();
-    }, 200);
+    window.__robloxIncomeScanTimeout = setTimeout(scanPageForCards, 250);
 });
-observer.observe(document.body, { childList: true, subtree: true });
 
-scanHomepageCards();
-startDynamicGamePage();
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+scanPageForCards();
+
 
 
 //CONFIG
@@ -555,6 +479,7 @@ startDynamicGamePage();
         }
 
         usdSpan.textContent = `(${usdValue} USD)`;
+       
     }
 
     function observeRobuxChanges() {
