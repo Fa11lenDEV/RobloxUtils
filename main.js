@@ -495,3 +495,49 @@ scanPageForCards();
 })();
 
 
+
+function setVotePercentageColor(card, approvalRating) {
+    if (approvalRating === null) {
+        return;
+    }
+
+    const percentageElement = card.querySelector('.vote-percentage-label');
+    if (!percentageElement) {
+        return;
+    }
+
+   
+
+    let color;
+    if (approvalRating >= 75) {
+        color = '#8BC48B'; 
+    } else if (approvalRating >= 50) {
+        color = '#FFD280'; 
+    } else {
+        color = '#FF9999'; 
+    }
+
+    percentageElement.style.color = color;
+}
+
+function scanPageForCards() {
+    const selectors = [
+        ".game-card-link",
+
+        ".list-item.game-card", ".game-card", ".card-game", 
+        ".game-card-container", ".item-card", ".card"
+    ];
+    const cards = document.querySelectorAll(selectors.join(', '));
+
+    cards.forEach(card => {
+        try {
+            applyEstimateToCard(card);
+
+            const approvalRating = getApprovalRating(card);
+            setVotePercentageColor(card, approvalRating);
+
+        } catch (e) {
+            console.error("RBI Error:", e);
+        }
+    });
+}
