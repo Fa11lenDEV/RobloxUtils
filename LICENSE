@@ -1,21 +1,73 @@
-MIT License
+PolyForm Noncommercial License 1.0.0
 
 Copyright (c) 2025 Fa11lenDEV
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted to any person obtaining a copy of this software
+(the “Software”) to use, copy, modify, and distribute it, subject to the
+following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Definitions
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+   “License” means this document.
+
+   “Licensor” means the copyright holder noted above.
+
+   “You” means the individual or entity exercising permissions granted by this
+   License.
+
+   “Use” means anything you do with the Software requiring copyright
+   permission, including reproduction, modification, distribution, execution,
+   and display.
+
+   “Noncommercial Purpose” means any use of the Software that is not
+   primarily intended for or directed towards commercial advantage or
+   monetary compensation.
+
+   “Commercial Purpose” means use of the Software that is intended for or
+   directed towards commercial advantage or monetary compensation.
+
+2. License Grant
+
+   Subject to the conditions below, the Licensor grants you a non-exclusive,
+   worldwide, non-sublicensable, non-transferable license to use the Software
+   solely for Noncommercial Purposes.
+
+3. Conditions
+
+   a. Noncommercial Use Only. You may use this Software only for
+   Noncommercial Purposes. Any Commercial Purpose requires the Licensor’s
+   prior written consent.
+
+   b. Distribution. You may distribute the Software, in whole or in part,
+   only for Noncommercial Purposes, and only under this License. You must
+   include a copy of this License with every copy of the Software you
+   distribute.
+
+   c. Modification. You may create and distribute modifications of the
+   Software only for Noncommercial Purposes, and only under this License. You
+   must include a notice stating that you have modified the Software, along
+   with the date of modification.
+
+4. No Warranty
+
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+   IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+5. Termination
+
+   Any breach of the conditions of this License will automatically terminate
+   your rights under it. Upon termination, you must immediately cease all use
+   of the Software and destroy all copies in your possession.
+
+6. Governing Law
+
+   This License will be governed by and construed in accordance with the laws
+   of the jurisdiction of the Licensor (Fa11lenDEV), without regard to its
+   conflict of law provisions.
+
+For more information, see:
+https://polyformproject.org/licenses/noncommercial/1.0.0
