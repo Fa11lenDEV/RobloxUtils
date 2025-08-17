@@ -177,8 +177,6 @@ var greetings = {
     }
 })();
 
-
-
 //GAME DOLAR VALUE
 const MIN_ARPU = 0.05;
 const MAX_ARPU = 0.15;
@@ -190,10 +188,17 @@ function estimateIncome(players, approvalRating) {
     let adjustedMaxArpu = MAX_ARPU;
 
     if (approvalRating && !isNaN(approvalRating)) {
+        // Reduzindo o impacto da aprovação por um fator de 2
         const arpuRange = MAX_ARPU - MIN_ARPU;
-        const adjustment = (approvalRating / 100) * arpuRange;
+        const adjustment = ((approvalRating / 100) - 0.5) * arpuRange;
+        
+        // Aumenta ou diminui o ARPU base de forma menos agressiva
         adjustedMinArpu = MIN_ARPU + (adjustment / 2);
-        adjustedMaxArpu = MAX_ARPU - (arpuRange - adjustment) / 2;
+        adjustedMaxArpu = MAX_ARPU + (adjustment / 2);
+
+        // Garante que os valores fiquem dentro do intervalo original
+        adjustedMinArpu = Math.max(MIN_ARPU, Math.min(adjustedMinArpu, MAX_ARPU));
+        adjustedMaxArpu = Math.max(MIN_ARPU, Math.min(adjustedMaxArpu, MAX_ARPU));
     }
 
     const low = Math.round(players * adjustedMinArpu);
@@ -254,7 +259,6 @@ function ensureCardId(card) {
 function applyEstimateToCard(card) {
     if (!card) return;
 
-    // --- NOVA LÓGICA: Se não houver jogadores ou se for um jogo indisponível, remova a estimativa. ---
     const playersEl = card.querySelector(".playing-counts-label, .game-card-playing-count, .game-card-meta .playing");
     let players = playersEl ? parsePlayerCount(playersEl.textContent) : null;
 
@@ -267,9 +271,7 @@ function applyEstimateToCard(card) {
             }
         }
     }
-    
-    // Verificamos se o jogo tem um número de jogadores (maior que 0) ou se ele tem o ícone de 'privado'
-    // Esta é a nova trava que deve funcionar para todos os casos.
+
     const isUnavailable = !players || players <= 0 ||
                           card.querySelector('.game-card-private-icon, .game-card-closed-icon');
 
@@ -278,12 +280,9 @@ function applyEstimateToCard(card) {
         return;
     }
 
-    // --- RESTANTE DO CÓDIGO ---
-
     ensureCardId(card);
     const lastKnownPlayers = parseInt(card.dataset.robloxIncomePlayers || '0', 10);
 
-    // Se o número de jogadores for o mesmo ou menor que o anterior, não faça nada.
     if (players <= lastKnownPlayers) {
         return;
     }
@@ -385,8 +384,6 @@ observer.observe(document.body, {
 });
 
 scanPageForCards();
-
-
 
 //CONFIG
 
