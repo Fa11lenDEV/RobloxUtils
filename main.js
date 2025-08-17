@@ -321,7 +321,7 @@ function applyEstimateToCard(card) {
                 span.textContent = textNoBreak;
                 span.style.whiteSpace = "nowrap";
                 span.style.display = "inline-block";
-                span.style.transform = "translateY(-18px)"; 
+                span.style.transform = "translateY(10px)"; 
             } else {
                 span.textContent = textVal;
                 span.style.whiteSpace = "";
@@ -348,7 +348,7 @@ function applyEstimateToCard(card) {
         span.textContent = textNoBreak;
         span.style.whiteSpace = "nowrap";
         span.style.display = "inline-block";
-        span.style.transform = "translateY(-25px)";
+        span.style.transform = "translateY(20px)";
 
         const prefer = preferInfoArea.querySelector(".info-label, .game-card-meta, .meta, .game-meta, .card-subtitle, .card-footer");
         if (prefer) prefer.appendChild(span); else preferInfoArea.appendChild(span);
@@ -574,3 +574,4 @@ startDynamicGamePage();
 
     observeRobuxChanges();
 })();
+
