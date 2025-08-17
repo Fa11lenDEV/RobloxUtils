@@ -178,7 +178,7 @@ var greetings = {
 })();
 
 //GAME DOLAR VALUE
-const MIN_ARPU = 0.05;
+const MIN_ARPU = 0.08;
 const MAX_ARPU = 0.15;
 
 function estimateIncome(players, approvalRating) {
@@ -188,15 +188,13 @@ function estimateIncome(players, approvalRating) {
     let adjustedMaxArpu = MAX_ARPU;
 
     if (approvalRating && !isNaN(approvalRating)) {
-        // Reduzindo o impacto da aprovação por um fator de 2
+
         const arpuRange = MAX_ARPU - MIN_ARPU;
         const adjustment = ((approvalRating / 100) - 0.5) * arpuRange;
-        
-        // Aumenta ou diminui o ARPU base de forma menos agressiva
+
         adjustedMinArpu = MIN_ARPU + (adjustment / 2);
         adjustedMaxArpu = MAX_ARPU + (adjustment / 2);
 
-        // Garante que os valores fiquem dentro do intervalo original
         adjustedMinArpu = Math.max(MIN_ARPU, Math.min(adjustedMinArpu, MAX_ARPU));
         adjustedMaxArpu = Math.max(MIN_ARPU, Math.min(adjustedMaxArpu, MAX_ARPU));
     }
