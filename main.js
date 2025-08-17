@@ -162,202 +162,163 @@ const MIN_ARPU = 0.05;
 const MAX_ARPU = 0.15;
 
 function estimateIncome(players) {
-  if (!players || isNaN(players)) return null;
-  const low = Math.round(players * MIN_ARPU);
-  const high = Math.round(players * MAX_ARPU);
-  return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
+    if (!players || isNaN(players)) return null;
+    const low = Math.round(players * MIN_ARPU);
+    const high = Math.round(players * MAX_ARPU);
+    return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
 }
 
 function parseNumeric(numericPart, isFromTitle) {
- 
-  if (isFromTitle) {
-    const cleaned = numericPart.replace(/[^0-9]/g, '');
-    return parseInt(cleaned, 10);
-  } else {
-    
-    const parsedStr = numericPart.replace(/,/g, '');
-    return parseFloat(parsedStr);
-  }
+    if (isFromTitle) {
+        const cleaned = numericPart.replace(/[^0-9]/g, '');
+        return parseInt(cleaned, 10);
+    } else {
+        const parsedStr = numericPart.replace(/,/g, '');
+        return parseFloat(parsedStr);
+    }
 }
 
 function parsePlayersHighlights(text) {
-  if (!text) return null;
-  let s = String(text).replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
-  s = s.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
-  if (!s) return null;
-
-  const suffix = s.slice(-1);
-  let multiplier = 1;
-  let numericPart = s;
-
-  if (suffix === "K") multiplier = 1e3;
-  else if (suffix === "M") multiplier = 1e6;
-  else if (suffix === "B") multiplier = 1e9;
-
-  if (["K","M","B"].includes(suffix)) numericPart = s.slice(0, -1);
-  
-  const num = parseNumeric(numericPart, false);
-  return isNaN(num) ? null : Math.round(num * multiplier);
+    if (!text) return null;
+    let s = String(text).replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
+    s = s.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
+    if (!s) return null;
+    const suffix = s.slice(-1);
+    let multiplier = 1;
+    let numericPart = s;
+    if (suffix === "K") multiplier = 1e3;
+    else if (suffix === "M") multiplier = 1e6;
+    else if (suffix === "B") multiplier = 1e9;
+    if (["K","M","B"].includes(suffix)) numericPart = s.slice(0, -1);
+    const num = parseNumeric(numericPart, false);
+    return isNaN(num) ? null : Math.round(num * multiplier);
 }
 
 function parsePlayersGamePage(el) {
-  if (!el) return null;
-
-  const title = el.getAttribute("title");
-  const textContent = el.textContent;
-
-  let text = title || textContent;
-  if (!text) return null;
-
-  text = text.replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
-  text = text.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
-  if (!text) return null;
-
-  const suffix = text.slice(-1);
-  let multiplier = 1;
-  let numericPart = text;
-
-  if (suffix === "K") multiplier = 1e3;
-  else if (suffix === "M") multiplier = 1e6;
-  else if (suffix === "B") multiplier = 1e9;
-
-  if (["K","M","B"].includes(suffix)) numericPart = text.slice(0, -1);
-  
-  const num = parseNumeric(numericPart, !!title);
-  return isNaN(num) ? null : Math.round(num * multiplier);
+    if (!el) return null;
+    const title = el.getAttribute("title");
+    const textContent = el.textContent;
+    let text = title || textContent;
+    if (!text) return null;
+    text = text.replace(/\+/g, "").replace(/\u00A0/g, " ").trim().toUpperCase();
+    text = text.replace(/[^0-9.,KMB\s]/g, "").replace(/\s+/g, "");
+    if (!text) return null;
+    const suffix = text.slice(-1);
+    let multiplier = 1;
+    let numericPart = text;
+    if (suffix === "K") multiplier = 1e3;
+    else if (suffix === "M") multiplier = 1e6;
+    else if (suffix === "B") multiplier = 1e9;
+    if (["K","M","B"].includes(suffix)) numericPart = text.slice(0, -1);
+    const num = parseNumeric(numericPart, !!title);
+    return isNaN(num) ? null : Math.round(num * multiplier);
 }
 
 function insertEstimateDetail(titleContainer, players) {
-  if (!titleContainer || !players) return;
-
-  let wrapper = titleContainer.querySelector(".estimate-detail");
-  if (!wrapper) {
-    wrapper = document.createElement("div");
-    wrapper.className = "info-label estimate-detail";
-    wrapper.style.display = "flex";
-    wrapper.style.alignItems = "center";
-    
-
-   
-  
-   
-
-    const text = document.createElement("span");
-    text.className = "estimate-detail";
-
-
-    wrapper.appendChild(text);
-    titleContainer.appendChild(wrapper);
-
-    const cardName = titleContainer.parentElement.querySelector(".game-card-name");
-    if (cardName) cardName.style.paddingBottom = "50px";
-  }
-
-  wrapper.querySelector("span").textContent = estimateIncome(players);
+    if (!titleContainer || !players) return;
+    let wrapper = titleContainer.querySelector(".estimate-detail");
+    if (!wrapper) {
+        wrapper = document.createElement("div");
+        wrapper.className = "info-label estimate-detail";
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        const text = document.createElement("span");
+        text.className = "estimate-detail";
+        wrapper.appendChild(text);
+        titleContainer.appendChild(wrapper);
+        const cardName = titleContainer.parentElement.querySelector(".game-card-name");
+        if (cardName) cardName.style.paddingBottom = "50px";
+    }
+    wrapper.querySelector("span").textContent = estimateIncome(players);
 }
 
 function insertEstimateCard(element, players) {
-  if (!element || !players || element.querySelector(".income-estimate")) return;
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "info-label income-estimate";
-  wrapper.style.display = "flex";
-  wrapper.style.alignItems = "center";
-  wrapper.style.gap = "6px";
-
-
-
-  const text = document.createElement("span");
-  text.textContent = estimateIncome(players);
-
-
-  wrapper.appendChild(text);
-  element.appendChild(wrapper);
+    if (!element || !players || element.querySelector(".income-estimate")) return;
+    const wrapper = document.createElement("div");
+    wrapper.className = "info-label income-estimate";
+    wrapper.style.display = "flex";
+    wrapper.style.alignItems = "center";
+    wrapper.style.gap = "6px";
+    const text = document.createElement("span");
+    text.textContent = estimateIncome(players);
+    wrapper.appendChild(text);
+    element.appendChild(wrapper);
 }
 
 function scanHomepageCards() {
-  document.querySelectorAll(".list-item.game-card").forEach(card => {
-    const playersEl = card.querySelector(".playing-counts-label");
-    const injCard = card.querySelector(".game-card-info");
-    if (playersEl && injCard) {
-      const players = parsePlayersHighlights(playersEl.textContent);
-      if (players) insertEstimateDetail(injCard, players);
-    }
-  });
+    document.querySelectorAll(".list-item.game-card").forEach(card => {
+        const playersEl = card.querySelector(".playing-counts-label");
+        const injCard = card.querySelector(".game-card-info");
+        if (playersEl && injCard) {
+            const players = parsePlayersHighlights(playersEl.textContent);
+            if (players) insertEstimateDetail(injCard, players);
+        }
+    });
 }
 
 function startDynamicGamePage() {
-  const statEl = document.querySelector(".game-stat:first-child .text-lead");
-  if (!statEl) return;
-
-  let retryCount = 0;
-  let lastPlayers = null;
-  let stableCount = 0;
-  const maxRetries = 10;
-  let debounceTimer = null;
-
-  const update = () => {
-    const players = parsePlayersGamePage(statEl);
-    const title = statEl.getAttribute("title") || '';
-    const textClean = statEl.textContent.replace(/[^0-9]/g, '');
-    const titleClean = title.replace(/[^0-9]/g, '');
-
-    if (!players || players < 100 || (title && textClean !== titleClean)) {
-      if (retryCount < maxRetries) {
-        retryCount++;
+    const statEl = document.querySelector(".game-stat:first-child .text-lead");
+    if (!statEl) return;
+    let retryCount = 0;
+    let lastPlayers = null;
+    let stableCount = 0;
+    const maxRetries = 10;
+    let debounceTimer = null;
+    const update = () => {
+        const players = parsePlayersGamePage(statEl);
+        const title = statEl.getAttribute("title") || '';
+        const textClean = statEl.textContent.replace(/[^0-9]/g, '');
+        const titleClean = title.replace(/[^0-9]/g, '');
+        if (!players || players < 100 || (title && textClean !== titleClean)) {
+            if (retryCount < maxRetries) {
+                retryCount++;
+                setTimeout(update, 1000);
+            }
+            return;
+        }
+        if (players === lastPlayers) {
+            stableCount++;
+            if (stableCount >= 2) {
+                const titleContainer = document.querySelector(".game-title-container");
+                const playButtonParent = document.querySelector(".btn-play-game, .play-button-container")?.parentElement;
+                if (titleContainer) insertEstimateDetail(titleContainer, players);
+                if (playButtonParent) insertEstimateDetail(playButtonParent, players);
+                return;
+            }
+        } else {
+            stableCount = 0;
+        }
+        lastPlayers = players;
         setTimeout(update, 1000);
-      }
-      return;
-    }
-
-    if (players === lastPlayers) {
-      stableCount++;
-      if (stableCount >= 2) { 
-        const titleContainer = document.querySelector(".game-title-container");
-        const playButtonParent = document.querySelector(".btn-play-game, .play-button-container")?.parentElement;
-
-        if (titleContainer) insertEstimateDetail(titleContainer, players);
-        if (playButtonParent) insertEstimateDetail(playButtonParent, players);
-        return;
-      }
-    } else {
-      stableCount = 0;
-    }
-    lastPlayers = players;
-
-    setTimeout(update, 1000);
-  };
-
-  const debouncedUpdate = () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      retryCount = 0;
-      stableCount = 0;
-      update();
-    }, 500); 
-  };
-
-  update();
-
-  const mo = new MutationObserver(debouncedUpdate);
-  mo.observe(statEl, { childList: true, subtree: true, characterData: true, attributes: true });
+    };
+    const debouncedUpdate = () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            retryCount = 0;
+            stableCount = 0;
+            update();
+        }, 500);
+    };
+    update();
+    const mo = new MutationObserver(debouncedUpdate);
+    mo.observe(statEl, { childList: true, subtree: true, characterData: true, attributes: true });
 }
 
 let lastURL = location.href;
 setInterval(() => {
-  if (location.href !== lastURL) {
-    lastURL = location.href;
-    scanHomepageCards();
-    startDynamicGamePage();
-  }
+    if (location.href !== lastURL) {
+        lastURL = location.href;
+        scanHomepageCards();
+        startDynamicGamePage();
+    }
 }, 1000);
 
 const observer = new MutationObserver(() => {
-  if (window.__robloxIncomeScanTimeout) clearTimeout(window.__robloxIncomeScanTimeout);
-  window.__robloxIncomeScanTimeout = setTimeout(() => {
-    scanHomepageCards();
-    startDynamicGamePage();
-  }, 200);
+    if (window.__robloxIncomeScanTimeout) clearTimeout(window.__robloxIncomeScanTimeout);
+    window.__robloxIncomeScanTimeout = setTimeout(() => {
+        scanHomepageCards();
+        startDynamicGamePage();
+    }, 200);
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
