@@ -574,4 +574,3 @@ startDynamicGamePage();
 
     observeRobuxChanges();
 })();
-
