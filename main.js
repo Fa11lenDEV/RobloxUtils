@@ -311,7 +311,7 @@ function applyEstimateToCard(card) {
     const titleContainer = card.querySelector(".game-title-container, .game-card-info, .game-card-name, .text") || preferInfoArea;
     const small = isSmallCard(card);
     const textVal = estimateIncome(players);
-    const textNoBreak = textVal.replace(' - ', '\u00A0-\u00A0');
+    const textNoBreak = textVal.replace(' - ', '\u00A0-\u00A0') + ' USD';
 
     if (existing) {
 
