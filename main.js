@@ -541,3 +541,44 @@ function scanPageForCards() {
         }
     });
 }
+
+
+// Crie e injete o script local do Supabase
+const supabaseScript = document.createElement('script');
+supabaseScript.src = chrome.runtime.getURL('supabase.js');  // Referência local via API da extensão
+document.head.appendChild(supabaseScript);
+
+supabaseScript.onload = async function() {
+  // Crie o cliente Supabase
+  const supabaseUrl = 'https://xzxykkmlgrmqjfkiddzr.supabase.co';  // URL do seu projeto
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHlra21sZ3JtcWpma2lkZHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NjExMzgsImV4cCI6MjA3MTAzNzEzOH0.lD7GGSC-CDn-0yWnjoH6zFTR5kSLPxkXB-h7u4uv8_w';  // Chave anônima
+  const { createClient } = supabase;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Verifique se o usuário está logado no Roblox
+  if (window.Roblox && window.Roblox.CurrentUser) {
+    const userId = window.Roblox.CurrentUser.userId;  // ID do usuário (BigInt no banco)
+    const userName = window.Roblox.CurrentUser.name;  // Nome do usuário
+    const email = 'none@gmail.com';                   // Email fixo como pedido
+
+    // Dados a serem salvos
+    const playerData = {
+      id: userId,
+      name: userName,
+      email: email
+    };
+
+    // Insira ou atualize (upsert) na tabela 'players'
+    const { data, error } = await supabase
+      .from('players')
+      .upsert(playerData, { onConflict: 'id' });  // Usa o ID como chave para upsert
+
+    if (error) {
+      console.error('Erro ao salvar no Supabase:', error);
+    } else {
+      console.log('Dados salvos com sucesso:', data);
+    }
+  } else {
+    console.log('Usuário não logado no Roblox.');
+  }
+};

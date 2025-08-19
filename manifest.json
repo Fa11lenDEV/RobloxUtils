@@ -11,7 +11,9 @@
     },
     "permissions": [
         "cookies",
-        "*://*.roblox.com/"
+        "*://*.roblox.com/",
+        "storage",
+        "activeTab"
     ],
     "content_scripts": [
         {
@@ -25,5 +27,11 @@
                 "*://*.roblox.com/*home*"
             ]
         }
-    ]
+    ],
+    "web_accessible_resources": [
+    {
+      "resources": ["main.js"],
+      "matches": ["https://www.roblox.com/*"]
+    }
+  ]
 }
