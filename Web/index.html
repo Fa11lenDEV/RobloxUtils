@@ -3,9 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
+    <title>Roblox Utils - Enhance Your Roblox Experience</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Test</h1>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Roblox Utils</h1>
+                <span class="version-badge"><span id="latest-version-hero">...</span></span>
+            </div>
+            <nav class="nav">
+                <a href="#features">Features</a>
+                <a href="#updates">Updates</a>
+                <a href="https://github.com/Fa11lenDEV/RobloxUtils" target="_blank" class="github-link">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2 class="hero-title">Enhance Your Roblox Experience</h2>
+            <p class="hero-description">
+                An open-source browser extension that improves the Roblox website with powerful features and quality of life improvements.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" id="release-count">0</span>
+                    <span class="stat-label">Releases</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">Open Source</span>
+                    <span class="stat-label">MIT License</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#" id="download-btn" target="_blank" class="btn btn-primary">
+                    Download <span id="latest-version">...</span>
+                </a>
+                <a href="https://github.com/Fa11lenDEV/RobloxUtils" target="_blank" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura_de_tela_2025-08-17_012424-eTRJKt3NaYpt9ZQTheNleTCTGDNgma.png" alt="Multi-language greeting with badges" />
+                    </div>
+                    <h3>Multi-Language Greetings</h3>
+                    <p>Personalized greetings in multiple languages with special badges for verified and veteran accounts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura_de_tela_2025-08-17_012421-oEqPQhhZ3EVUE9IYRm3PXSNFpGQtp4.png" alt="Verified badge" />
+                    </div>
+                    <h3>Verified Badge Display</h3>
+                    <p>Shows verified status for authenticated Roblox accounts with a special blue checkmark badge.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura_de_tela_2025-08-17_012400-mKUixwXyrZzs5Jphgiup9TAb69r3mS.png" alt="Veteran star" />
+                    </div>
+                    <h3>Veteran Recognition</h3>
+                    <p>Special star badge for accounts created in 2015 or earlier, honoring long-time players.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura_de_tela_2025-08-19_205125-KPYJbMAIbt6gU7eJavzKOMNFVSfspJ.png" alt="Robux to USD converter" />
+                    </div>
+                    <h3>Robux to USD Converter</h3>
+                    <p>Instantly see the real-world value of your Robux balance with automatic USD conversion.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura_de_tela_2025-08-17_204924-qwqsL9Z2mrMOhPpBl3AYTCKj5b6Z3H.png" alt="Enhanced game display" />
+                    </div>
+                    <h3>Enhanced Game Display</h3>
+                    <p>Improved game browsing interface with better thumbnails, stats, and information layout.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3>And Much More</h3>
+                    <p>Continuous updates with new features and improvements to enhance your Roblox experience.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="updates" class="updates">
+        <div class="container">
+            <h2 class="section-title">Latest Updates</h2>
+            <div id="updates-container" class="updates-container">
+                <div id="loading" class="loading">Loading updates...</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Roblox Utils. Open source project by <a href="https://github.com/Fa11lenDEV" target="_blank">Fa11lenDEV</a></p>
+            <p>Not affiliated with Roblox Corporation.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
