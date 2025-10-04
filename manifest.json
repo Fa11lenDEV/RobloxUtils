@@ -18,6 +18,14 @@
     "content_scripts": [
         {
             "js": [
+                "utils/dom.js",
+                "utils/parsers.js",
+                "data/greetings.js",
+                "features/income-estimator.js",
+                "features/robux-converter.js",
+                "features/profile-customizer.js",
+                "services/supabase-client.js",
+                "ui/extension-menu.js",
                 "main.js"
             ],
             "css": [
@@ -30,7 +38,17 @@
     ],
     "web_accessible_resources": [
     {
-      "resources": ["main.js"],
+      "resources": [
+        "utils/dom.js",
+        "utils/parsers.js",
+        "data/greetings.js",
+        "features/income-estimator.js",
+        "features/robux-converter.js",
+        "features/profile-customizer.js",
+        "services/supabase-client.js",
+        "ui/extension-menu.js",
+        "main.js"
+      ],
       "matches": ["https://www.roblox.com/*"]
     }
   ]
